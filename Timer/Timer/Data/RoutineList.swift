@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftUI
-import Observation
+import Combine
 
 struct Exercise: Identifiable {
     var id = UUID()
@@ -30,9 +30,8 @@ struct Routine: Identifiable {
     }
 }
 
-@Observable
-class RoutineStore {
-    var routines: [Routine] = [
+class RoutineStore: ObservableObject {
+    @Published var routines: [Routine] = [
         Routine(routineName: "Legs", dayOfWeek: "Friday", exercises: [
             Exercise(name: "Raises", duration: 60, sets: 3, restDuration: 30),
             Exercise(name: "Pull Ups", duration: 45, sets: 3, restDuration: 30),
