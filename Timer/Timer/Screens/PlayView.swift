@@ -94,6 +94,7 @@ struct PlayView: View {
                 Spacer()
             }
         }
+        .navigationBarHidden(true)
         .onDisappear {
             stopTimer()
         }
