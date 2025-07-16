@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct AddItemView: View {
-    @Bindable var routineStore: RoutineStore
-    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var routineStore: RoutineStore
+    @Environment(\.presentationMode) var presentationMode
     
     //Main Form Info
     @State private var title = ""
@@ -21,9 +21,9 @@ struct AddItemView: View {
     @State private var exercises: [TempExercise] = [TempExercise()]
     
     var body: some View {
-        NavigationStack {
+        NavigationView {
             Form {
-                Section {
+                Section(header: Text("Build your Workout Routine").padding(.top)) {
                     TextField("Routine Name", text: $title)
                     Picker("Assign a Day", selection: $day) {
                         ForEach(dayarr, id: \.self) {
@@ -31,39 +31,31 @@ struct AddItemView: View {
                         }
                     }
                     Stepper("Exercises in Routine: \(numOfWorkouts)", value: $numOfWorkouts, in: 1...10)
-                        .onChange(of: numOfWorkouts) { _, newValue in
+                        .onChange(of: numOfWorkouts) { _ in
                             updateExercises()
                         }
-                } header: {
-                    Text("Build your Workout Routine")
-                        .padding(.top)
                 }
                 
                 ForEach(exercises.indices, id: \.self) { index in
-                    Section {
+                    Section(header: Text("Exercise \(index + 1)")) {
                         TextField("Exercise Name", text: $exercises[index].name)
                         TextField("Duration (seconds)", text: $exercises[index].durationString)
                             .keyboardType(.numberPad)
                         Stepper("Sets: \(exercises[index].sets)", value: $exercises[index].sets, in: 1...10)
                         TextField("Rest Duration (seconds)", text: $exercises[index].restDurationString)
                             .keyboardType(.numberPad)
-                    } header: {
-                        Text("Exercise \(index + 1)")
                     }
                 }
             }
             .navigationTitle("New Routine")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel", action: cancel)
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save", action: save)
-                        .disabled(title.isEmpty)
-                }
-            }
+            .navigationBarItems(
+                leading: Button("Cancel", action: cancel),
+                trailing: Button("Save", action: save)
+                    .disabled(title.isEmpty)
+            )
         }
+        .navigationBarHidden(true)
         .onAppear {
             updateExercises()
         }
@@ -95,22 +87,23 @@ struct AddItemView: View {
         )
         
         routineStore.routines.append(newRoutine)
-        dismiss()
+        presentationMode.wrappedValue.dismiss()
     }
     
     private func cancel() {
-        dismiss()
+        presentationMode.wrappedValue.dismiss()
     }
 }
 
-@Observable
-class TempExercise {
-    var name: String = ""
-    var durationString: String = "60"
-    var sets: Int = 3
-    var restDurationString: String = "30"
+class TempExercise: ObservableObject {
+    @Published var name: String = ""
+    @Published var durationString: String = "60"
+    @Published var sets: Int = 3
+    @Published var restDurationString: String = "30"
 }
 
-#Preview {
-    AddItemView(routineStore: RoutineStore())
+struct AddItemView_Previews: PreviewProvider {
+    static var previews: some View {
+        AddItemView(routineStore: RoutineStore())
+    }
 }
