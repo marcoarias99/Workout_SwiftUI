@@ -158,9 +158,7 @@ struct PlayView: View {
         if currentExerciseIndex > 0 {
             currentExerciseIndex -= 1
             currentSet = 1
-            Task {
-                await setupTimer()
-            }
+            setupTimer()
         }
     }
     
