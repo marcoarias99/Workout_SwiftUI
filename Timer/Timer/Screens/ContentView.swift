@@ -9,9 +9,8 @@ import SwiftUI
 import Combine
 
 struct ContentView: View {
-    @State private var routineStore = RoutineStore()
+    @StateObject private var routineStore = RoutineStore()
     @State private var textBox: String = ""
-    @State private var path = NavigationPath()
     
     var dayarr = ["","Sunday", "Monday", "Tuesday","Wednesday","Thursday","Friday","Saturday"]
     
