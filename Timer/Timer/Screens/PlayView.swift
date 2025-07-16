@@ -100,8 +100,7 @@ struct PlayView: View {
         }
     }
     
-    @MainActor
-    func setupTimer() async {
+    func setupTimer() {
         if let exercise = currentExercise {
             timeLeft = exercise.duration
         }
