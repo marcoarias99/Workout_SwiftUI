@@ -44,9 +44,9 @@ struct ContentView: View {
                         Text("Routines")
                             .frame(width: 300, height: 50, alignment: .leading)
                             .font(.system(size: 32, weight: .bold))
-                        Button(action: self.addNewRoutine, label: {
+                        NavigationLink(destination: AddItemView(routineStore: routineStore)) {
                             ImageButton(buttonText: "plus.circle.fill")
-                        })
+                        }
                     }
                     TextField("Enter the new routine", text: self.$textBox)
                         .frame(width: 350, height: 25)
