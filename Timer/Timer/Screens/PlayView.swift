@@ -183,6 +183,8 @@ struct BasicButton: View {
     }
 }
 
-#Preview {
-    PlayView(routineStore: RoutineStore())
+struct PlayView_Previews: PreviewProvider {
+    static var previews: some View {
+        PlayView(routineStore: RoutineStore())
+    }
 }
