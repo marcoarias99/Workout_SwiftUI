@@ -98,8 +98,8 @@ async def startup_event():
     # Insert routine
     routines_collection.insert_one(sample_routine.dict())
     
-    # Create sample schedule for Friday
-    sample_schedule = DaySchedule(
+    # Create sample schedule for Friday and Wednesday
+    sample_schedule_friday = DaySchedule(
         id=str(uuid.uuid4()),
         day="Friday",
         routine_id=sample_routine.id,
@@ -107,7 +107,16 @@ async def startup_event():
         exercises=[ex.name for ex in sample_exercises]
     )
     
-    schedules_collection.insert_one(sample_schedule.dict())
+    sample_schedule_wednesday = DaySchedule(
+        id=str(uuid.uuid4()),
+        day="Wednesday",
+        routine_id=sample_routine.id,
+        routine_name=sample_routine.name,
+        exercises=[ex.name for ex in sample_exercises]
+    )
+    
+    schedules_collection.insert_one(sample_schedule_friday.dict())
+    schedules_collection.insert_one(sample_schedule_wednesday.dict())
 
 # API endpoints
 @app.get("/api/health")
