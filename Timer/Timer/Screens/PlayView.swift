@@ -59,8 +59,8 @@ struct PlayView: View {
                     .font(.system(size: 100, weight: .semibold))
                     .foregroundColor(.white)
                     .padding()
-                    .task {
-                        await setupTimer()
+                    .onAppear {
+                        setupTimer()
                     }
                 
                 Spacer().frame(height: 100)
