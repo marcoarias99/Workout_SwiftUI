@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PlayView: View {
-    let routineStore: RoutineStore
+    @ObservedObject var routineStore: RoutineStore
     @State private var currentExerciseIndex: Int = 0
     @State private var currentSet: Int = 1
     @State private var timeLeft: Int = 0
