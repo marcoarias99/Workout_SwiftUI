@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct AddItemView: View {
-    @ObservedObject var routineStore: RoutineStore
-    @Environment(\.presentationMode) var presentationMode
+    @Bindable var routineStore: RoutineStore
+    @Environment(\.dismiss) private var dismiss
     
     //Main Form Info
     @State private var title = ""
-    var dayarr = ["Sunday", "Monday", "Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    private let dayarr = ["Sunday", "Monday", "Tuesday","Wednesday","Thursday","Friday","Saturday"]
     @State private var day = "Sunday"
     @State private var numOfWorkouts = 1
     
@@ -21,45 +21,49 @@ struct AddItemView: View {
     @State private var exercises: [TempExercise] = [TempExercise()]
     
     var body: some View {
-        NavigationView{
-            Form{
-                Section(header: Text("Build your Workout Routine").padding(.top)){
+        NavigationStack {
+            Form {
+                Section {
                     TextField("Routine Name", text: $title)
-                    Picker("Assign a Day", selection: $day){
+                    Picker("Assign a Day", selection: $day) {
                         ForEach(dayarr, id: \.self) {
                             Text($0)
                         }
                     }
-                    Stepper("Exercises in Routine: \(self.numOfWorkouts)", value: $numOfWorkouts, in: 1...10)
-                        .onChange(of: numOfWorkouts) { newValue in
+                    Stepper("Exercises in Routine: \(numOfWorkouts)", value: $numOfWorkouts, in: 1...10)
+                        .onChange(of: numOfWorkouts) { _, newValue in
                             updateExercises()
                         }
+                } header: {
+                    Text("Build your Workout Routine")
+                        .padding(.top)
                 }
                 
-                ForEach(0 ..< numOfWorkouts, id:\.self) { index in
-                    Section(header: Text("Exercise \(index + 1)")){
+                ForEach(exercises.indices, id: \.self) { index in
+                    Section {
                         TextField("Exercise Name", text: $exercises[index].name)
                         TextField("Duration (seconds)", text: $exercises[index].durationString)
                             .keyboardType(.numberPad)
                         Stepper("Sets: \(exercises[index].sets)", value: $exercises[index].sets, in: 1...10)
                         TextField("Rest Duration (seconds)", text: $exercises[index].restDurationString)
                             .keyboardType(.numberPad)
+                    } header: {
+                        Text("Exercise \(index + 1)")
                     }
                 }
             }
             .navigationTitle("New Routine")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar{
-                ToolbarItemGroup(placement: .navigationBarLeading) {
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel", action: cancel)
                 }
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save", action: save)
                         .disabled(title.isEmpty)
                 }
             }
         }
-        .navigationBarHidden(true)
         .onAppear {
             updateExercises()
         }
@@ -91,23 +95,22 @@ struct AddItemView: View {
         )
         
         routineStore.routines.append(newRoutine)
-        presentationMode.wrappedValue.dismiss()
+        dismiss()
     }
     
     private func cancel() {
-        presentationMode.wrappedValue.dismiss()
+        dismiss()
     }
 }
 
-struct TempExercise {
+@Observable
+class TempExercise {
     var name: String = ""
     var durationString: String = "60"
     var sets: Int = 3
     var restDurationString: String = "30"
 }
 
-struct AddItemView_Previews: PreviewProvider {
-    static var previews: some View {
-        AddItemView(routineStore: RoutineStore())
-    }
+#Preview {
+    AddItemView(routineStore: RoutineStore())
 }
