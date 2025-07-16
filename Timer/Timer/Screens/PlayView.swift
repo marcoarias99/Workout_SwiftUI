@@ -121,18 +121,16 @@ struct PlayView: View {
                 timeLeft -= 1
             } else {
                 // Time's up for this set
-                Task { @MainActor in
-                    stopTimer()
-                    isRunning = false
-                    
-                    // Check if there are more sets
-                    if let exercise = currentExercise, currentSet < exercise.sets {
-                        currentSet += 1
-                        timeLeft = exercise.duration
-                    } else {
-                        // Move to next exercise or finish
-                        nextExercise()
-                    }
+                stopTimer()
+                isRunning = false
+                
+                // Check if there are more sets
+                if let exercise = currentExercise, currentSet < exercise.sets {
+                    currentSet += 1
+                    timeLeft = exercise.duration
+                } else {
+                    // Move to next exercise or finish
+                    nextExercise()
                 }
             }
         }
