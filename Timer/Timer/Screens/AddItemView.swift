@@ -71,12 +71,17 @@ struct AddItemView: View {
     }
     
     private func save() {
+        // Validate input
+        guard !title.trimmingCharacters(in: .whitespaces).isEmpty else {
+            return
+        }
+        
         let exerciseArray = exercises.map { tempEx in
             Exercise(
                 name: tempEx.name.isEmpty ? "Exercise" : tempEx.name,
-                duration: Int(tempEx.durationString) ?? 60,
-                sets: tempEx.sets,
-                restDuration: Int(tempEx.restDurationString) ?? 30
+                duration: max(1, Int(tempEx.durationString) ?? 60),
+                sets: max(1, tempEx.sets),
+                restDuration: max(0, Int(tempEx.restDurationString) ?? 30)
             )
         }
         
@@ -86,7 +91,7 @@ struct AddItemView: View {
             exercises: exerciseArray
         )
         
-        routineStore.routines.append(newRoutine)
+        routineStore.addRoutine(newRoutine)
         presentationMode.wrappedValue.dismiss()
     }
     
