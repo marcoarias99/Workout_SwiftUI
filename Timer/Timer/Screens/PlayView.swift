@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct PlayView: View {
-    @ObservedObject var routineStore = RoutineStore()
-    @State var currentExerciseIndex: Int = 0
-    @State var currentSet: Int = 1
-    @State var timeLeft: Int = 0
-    @State var isRunning: Bool = false
-    @State var timer: Timer?
-    @Environment(\.presentationMode) var presentationMode
+    let routineStore: RoutineStore
+    @State private var currentExerciseIndex: Int = 0
+    @State private var currentSet: Int = 1
+    @State private var timeLeft: Int = 0
+    @State private var isRunning: Bool = false
+    @State private var timer: Timer?
+    @Environment(\.dismiss) private var dismiss
     
     var currentRoutine: Routine? {
         routineStore.getTodaysRoutine()
@@ -27,74 +27,79 @@ struct PlayView: View {
     }
     
     var body: some View {
-        NavigationView{
-            ZStack{
-                LinearGradient(gradient: Gradient(colors: [.orange, .black]),
-                               startPoint: .top,
-                               endPoint: .bottom)
-                    .edgesIgnoringSafeArea(.all)
+        ZStack {
+            LinearGradient(
+                gradient: Gradient(colors: [.orange, .black]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            
+            VStack {
+                // Exercise Name
+                Text(currentExercise?.name ?? "Exercise Name")
+                    .bold()
+                    .font(.largeTitle)
+                    .foregroundColor(.white)
+                    .padding(.vertical)
                 
-                VStack{
-                    // Exercise Name
-                    Text(currentExercise?.name ?? "Exercise Name")
-                        .bold()
-                        .font(.largeTitle)
-                        .foregroundColor(.white)
-                        .padding(.vertical)
-                    
-                    // Set indicator
-                    if let exercise = currentExercise {
-                        Text("Set \(currentSet) of \(exercise.sets)")
-                            .font(.title3)
-                            .foregroundColor(.white.opacity(0.8))
-                            .padding(.bottom, 20)
-                    }
-                    
-                    Spacer().frame(height: 100)
-                    
-                    // Timer Display
-                    Text(formatTime(timeLeft))
-                        .font(.system(size: 100, weight: .semibold))
-                        .foregroundColor(.white)
-                        .padding()
-                        .onAppear {
-                            setupTimer()
-                        }
-                    
-                    Spacer().frame(height: 100)
-                    
-                    // Controls
-                    HStack{
-                        Button(action: previousExercise,
-                               label: {BasicButton(buttonText: "chevron.backward.2")})
-                        
-                        Button(action: toggleTimer,
-                               label: {BasicButton(buttonText: isRunning ? "pause.circle.fill" : "play.circle.fill")})
-                            .padding(.horizontal, 50)
-                        
-                        Button(action: nextExercise,
-                               label: {BasicButton(buttonText: "chevron.forward.2")})
-                    }
-                    
-                    // Progress indicator
-                    if let routine = currentRoutine {
-                        Text("Exercise \(currentExerciseIndex + 1) of \(routine.exercises.count)")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
-                            .padding(.top, 20)
-                    }
-                    
-                    Spacer()
+                // Set indicator
+                if let exercise = currentExercise {
+                    Text("Set \(currentSet) of \(exercise.sets)")
+                        .font(.title3)
+                        .foregroundColor(.white.opacity(0.8))
+                        .padding(.bottom, 20)
                 }
+                
+                Spacer().frame(height: 100)
+                
+                // Timer Display
+                Text(formatTime(timeLeft))
+                    .font(.system(size: 100, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding()
+                    .task {
+                        await setupTimer()
+                    }
+                
+                Spacer().frame(height: 100)
+                
+                // Controls
+                HStack {
+                    Button(action: previousExercise) {
+                        BasicButton(buttonText: "chevron.backward.2")
+                    }
+                    .disabled(currentExerciseIndex == 0)
+                    
+                    Button(action: toggleTimer) {
+                        BasicButton(buttonText: isRunning ? "pause.circle.fill" : "play.circle.fill")
+                    }
+                    .padding(.horizontal, 50)
+                    
+                    Button(action: nextExercise) {
+                        BasicButton(buttonText: "chevron.forward.2")
+                    }
+                    .disabled(currentRoutine == nil || currentExerciseIndex >= (currentRoutine?.exercises.count ?? 0) - 1)
+                }
+                
+                // Progress indicator
+                if let routine = currentRoutine {
+                    Text("Exercise \(currentExerciseIndex + 1) of \(routine.exercises.count)")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.top, 20)
+                }
+                
+                Spacer()
             }
         }
-        .navigationBarHidden(true)
         .onDisappear {
             stopTimer()
         }
     }
     
-    func setupTimer() {
+    @MainActor
+    func setupTimer() async {
         if let exercise = currentExercise {
             timeLeft = exercise.duration
         }
@@ -115,16 +120,18 @@ struct PlayView: View {
                 timeLeft -= 1
             } else {
                 // Time's up for this set
-                stopTimer()
-                isRunning = false
-                
-                // Check if there are more sets
-                if let exercise = currentExercise, currentSet < exercise.sets {
-                    currentSet += 1
-                    timeLeft = exercise.duration
-                } else {
-                    // Move to next exercise or finish
-                    nextExercise()
+                Task { @MainActor in
+                    stopTimer()
+                    isRunning = false
+                    
+                    // Check if there are more sets
+                    if let exercise = currentExercise, currentSet < exercise.sets {
+                        currentSet += 1
+                        timeLeft = exercise.duration
+                    } else {
+                        // Move to next exercise or finish
+                        nextExercise()
+                    }
                 }
             }
         }
@@ -141,10 +148,12 @@ struct PlayView: View {
         if currentExerciseIndex < routine.exercises.count - 1 {
             currentExerciseIndex += 1
             currentSet = 1
-            setupTimer()
+            Task {
+                await setupTimer()
+            }
         } else {
             // Workout complete
-            presentationMode.wrappedValue.dismiss()
+            dismiss()
         }
     }
     
@@ -152,7 +161,9 @@ struct PlayView: View {
         if currentExerciseIndex > 0 {
             currentExerciseIndex -= 1
             currentSet = 1
-            setupTimer()
+            Task {
+                await setupTimer()
+            }
         }
     }
     
