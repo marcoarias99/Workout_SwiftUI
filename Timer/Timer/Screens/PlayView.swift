@@ -35,63 +35,87 @@ struct PlayView: View {
                     endPoint: .bottom
                 )
                 .edgesIgnoringSafeArea(.all)
-            
-            VStack {
-                // Exercise Name
-                Text(currentExercise?.name ?? "Exercise Name")
-                    .bold()
-                    .font(.largeTitle)
-                    .foregroundColor(.white)
-                    .padding(.vertical)
                 
-                // Set indicator
-                if let exercise = currentExercise {
-                    Text("Set \(currentSet) of \(exercise.sets)")
-                        .font(.title3)
-                        .foregroundColor(.white.opacity(0.8))
-                        .padding(.bottom, 20)
+                if currentExercise != nil {
+                    VStack {
+                        // Exercise Name
+                        Text(currentExercise?.name ?? "Exercise Name")
+                            .bold()
+                            .font(.largeTitle)
+                            .foregroundColor(.white)
+                            .padding(.vertical)
+                        
+                        // Set indicator
+                        if let exercise = currentExercise {
+                            Text("Set \(currentSet) of \(exercise.sets)")
+                                .font(.title3)
+                                .foregroundColor(.white.opacity(0.8))
+                                .padding(.bottom, 20)
+                        }
+                        
+                        Spacer().frame(height: 100)
+                        
+                        // Timer Display
+                        Text(formatTime(timeLeft))
+                            .font(.system(size: 100, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding()
+                            .onAppear {
+                                setupTimer()
+                            }
+                        
+                        Spacer().frame(height: 100)
+                        
+                        // Controls
+                        HStack {
+                            Button(action: previousExercise) {
+                                BasicButton(buttonText: "chevron.backward.2")
+                            }
+                            .disabled(currentExerciseIndex == 0)
+                            
+                            Button(action: toggleTimer) {
+                                BasicButton(buttonText: isRunning ? "pause.circle.fill" : "play.circle.fill")
+                            }
+                            .padding(.horizontal, 50)
+                            
+                            Button(action: nextExercise) {
+                                BasicButton(buttonText: "chevron.forward.2")
+                            }
+                            .disabled(currentRoutine == nil || currentExerciseIndex >= (currentRoutine?.exercises.count ?? 0) - 1)
+                        }
+                        
+                        // Progress indicator
+                        if let routine = currentRoutine {
+                            Text("Exercise \(currentExerciseIndex + 1) of \(routine.exercises.count)")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.7))
+                                .padding(.top, 20)
+                        }
+                        
+                        Spacer()
+                    }
+                } else {
+                    // No workout available
+                    VStack {
+                        Text("No workout available")
+                            .font(.largeTitle)
+                            .foregroundColor(.white)
+                            .padding()
+                        
+                        Text("Please add a routine for today")
+                            .font(.title3)
+                            .foregroundColor(.white.opacity(0.8))
+                            .padding()
+                        
+                        Button("Go Back") {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                        .padding()
+                        .background(Color.white.opacity(0.2))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
                 }
-                
-                Spacer().frame(height: 100)
-                
-                // Timer Display
-                Text(formatTime(timeLeft))
-                    .font(.system(size: 100, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding()
-                    .onAppear {
-                        setupTimer()
-                    }
-                
-                Spacer().frame(height: 100)
-                
-                // Controls
-                HStack {
-                    Button(action: previousExercise) {
-                        BasicButton(buttonText: "chevron.backward.2")
-                    }
-                    .disabled(currentExerciseIndex == 0)
-                    
-                    Button(action: toggleTimer) {
-                        BasicButton(buttonText: isRunning ? "pause.circle.fill" : "play.circle.fill")
-                    }
-                    .padding(.horizontal, 50)
-                    
-                    Button(action: nextExercise) {
-                        BasicButton(buttonText: "chevron.forward.2")
-                    }
-                    .disabled(currentRoutine == nil || currentExerciseIndex >= (currentRoutine?.exercises.count ?? 0) - 1)
-                }
-                
-                // Progress indicator
-                if let routine = currentRoutine {
-                    Text("Exercise \(currentExerciseIndex + 1) of \(routine.exercises.count)")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(.top, 20)
-                }
-                
-                Spacer()
             }
         }
         .navigationBarHidden(true)
