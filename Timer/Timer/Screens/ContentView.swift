@@ -9,8 +9,9 @@ import SwiftUI
 import Combine
 
 struct ContentView: View {
-    @ObservedObject var routineStore = RoutineStore()
-    @State var textBox: String = ""
+    @State private var routineStore = RoutineStore()
+    @State private var textBox: String = ""
+    @State private var path = NavigationPath()
     
     var dayarr = ["","Sunday", "Monday", "Tuesday","Wednesday","Thursday","Friday","Saturday"]
     
@@ -20,48 +21,91 @@ struct ContentView: View {
     }
     
     var body: some View {
-        NavigationView{ GeometryReader{ geo in
-            VStack{
-                VStack{
-                Text("Calendar")
-                    .frame(width: 350, height: 50, alignment: .leading)
-                    .font(.system(size: 32, weight: .bold))
-                TodaysWorkout(dayOfWeek: "\(dayarr[weekday])", routineName: "LEGS")
-                Spacer().frame(height: 150)
-                }
-                NavigationLink(destination: PlayView(), label: {
-                    Text("START")
-                        .font(.system(size: 32, weight: .bold))
-                        .frame(width:400, height: 80, alignment: .center)
-                        .background(routineStore.getTodaysRoutine() != nil ? Color.red : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(20)
-                })
-                .disabled(routineStore.getTodaysRoutine() == nil)
-                
-                VStack{
-                    HStack{
-                        Text("Routines")
-                            .frame(width: 300, height: 50, alignment: .leading)
+        NavigationStack(path: $path) {
+            GeometryReader { geo in
+                VStack {
+                    VStack {
+                        Text("Calendar")
+                            .frame(width: 350, height: 50, alignment: .leading)
                             .font(.system(size: 32, weight: .bold))
-                        NavigationLink(destination: AddItemView(routineStore: routineStore)) {
-                            ImageButton(buttonText: "plus.circle.fill")
-                        }
+                        
+                        TodaysWorkout(dayOfWeek: "\(dayarr[weekday])", routineStore: routineStore)
+                        
+                        Spacer().frame(height: 150)
                     }
-                    TextField("Enter the new routine", text: self.$textBox)
-                        .frame(width: 350, height: 25)
                     
-                    List {
-                        ForEach(routineStore.routines){ routine in
-                            RoutineRow(routineName: routine.routineName)}
-                        .onMove(perform: self.move)
-                        .onDelete(perform: self.delete)
+                    Button {
+                        path.append("timer")
+                    } label: {
+                        Text("START")
+                            .font(.system(size: 32, weight: .bold))
+                            .frame(width: 400, height: 80, alignment: .center)
+                            .background(routineStore.getTodaysRoutine() != nil ? Color.red : Color.gray)
+                            .foregroundColor(.white)
+                            .cornerRadius(20)
                     }
-                    .frame(width: geo.size.width - 5, height: geo.size.height - 50, alignment: .center)
+                    .disabled(routineStore.getTodaysRoutine() == nil)
+                    
+                    VStack {
+                        HStack {
+                            Text("Routines")
+                                .frame(width: 300, height: 50, alignment: .leading)
+                                .font(.system(size: 32, weight: .bold))
+                            
+                            Button {
+                                path.append("addRoutine")
+                            } label: {
+                                ImageButton(buttonText: "plus.circle.fill")
+                            }
+                        }
+                        
+                        TextField("Enter the new routine", text: $textBox)
+                            .frame(width: 350, height: 25)
+                            .onSubmit {
+                                addNewRoutine()
+                            }
+                        
+                        List {
+                            ForEach(routineStore.routines) { routine in
+                                RoutineRow(routineName: routine.routineName)
+                            }
+                            .onMove(perform: move)
+                            .onDelete(perform: delete)
+                        }
+                        .frame(width: geo.size.width - 5, height: geo.size.height - 50, alignment: .center)
+                    }
+                }
             }
-        }}
-        .navigationBarHidden(true)}
+            .navigationDestination(for: String.self) { destination in
+                switch destination {
+                case "timer":
+                    PlayView(routineStore: routineStore)
+                case "addRoutine":
+                    AddItemView(routineStore: routineStore)
+                default:
+                    EmptyView()
+                }
+            }
+        }
     }
+    
+    func move(from source: IndexSet, to destination: Int) {
+        routineStore.routines.move(fromOffsets: source, toOffset: destination)
+    }
+    
+    func delete(at offsets: IndexSet) {
+        routineStore.routines.remove(atOffsets: offsets)
+    }
+    
+    func addNewRoutine() {
+        guard !textBox.trimmingCharacters(in: .whitespaces).isEmpty else {
+            return textBox = ""
+        }
+        let newRoutine = Routine(routineName: textBox)
+        routineStore.routines.append(newRoutine)
+        textBox = ""
+    }
+}
     
     func move(from source: IndexSet, to destination: Int) {
         routineStore.routines.move(fromOffsets: source, toOffset: destination)
