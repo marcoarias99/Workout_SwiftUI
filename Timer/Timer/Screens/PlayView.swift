@@ -147,12 +147,10 @@ struct PlayView: View {
         if currentExerciseIndex < routine.exercises.count - 1 {
             currentExerciseIndex += 1
             currentSet = 1
-            Task {
-                await setupTimer()
-            }
+            setupTimer()
         } else {
             // Workout complete
-            dismiss()
+            presentationMode.wrappedValue.dismiss()
         }
     }
     
