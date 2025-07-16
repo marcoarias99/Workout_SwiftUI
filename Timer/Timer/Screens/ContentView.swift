@@ -129,10 +129,11 @@ struct ImageButton: View {
 
     var body: some View{
         Image(systemName: buttonText)
-            .renderingMode(.original)
+            .renderingMode(.template)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: 40, height: 40, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+            .foregroundColor(.green)
+            .frame(width: 40, height: 40, alignment: .center)
     }
 }
 
