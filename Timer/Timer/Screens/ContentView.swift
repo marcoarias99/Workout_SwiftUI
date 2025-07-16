@@ -75,19 +75,20 @@ struct ContentView: View {
     }
     
     func move(from source: IndexSet, to destination: Int) {
-        routineStore.routines.move(fromOffsets: source, toOffset: destination)
+        routineStore.moveRoutines(from: source, to: destination)
     }
     
     func delete(at offsets: IndexSet) {
-        routineStore.routines.remove(atOffsets: offsets)
+        routineStore.deleteRoutines(at: offsets)
     }
     
     func addNewRoutine() {
         guard !textBox.trimmingCharacters(in: .whitespaces).isEmpty else {
-            return textBox = ""
+            textBox = ""
+            return
         }
         let newRoutine = Routine(routineName: textBox)
-        routineStore.routines.append(newRoutine)
+        routineStore.addRoutine(newRoutine)
         textBox = ""
     }
 }
