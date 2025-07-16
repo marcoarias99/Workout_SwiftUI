@@ -27,13 +27,14 @@ struct PlayView: View {
     }
     
     var body: some View {
-        ZStack {
-            LinearGradient(
-                gradient: Gradient(colors: [.orange, .black]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+        NavigationView {
+            ZStack {
+                LinearGradient(
+                    gradient: Gradient(colors: [.orange, .black]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .edgesIgnoringSafeArea(.all)
             
             VStack {
                 // Exercise Name
