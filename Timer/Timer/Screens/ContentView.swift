@@ -82,17 +82,34 @@ struct ContentView: View {
 struct TodaysWorkout: View{
     var dayOfWeek: String
     var routineName: String
+    @ObservedObject var routineStore = RoutineStore()
     
     var body: some View{
         VStack(alignment: .center){
             Text(dayOfWeek)
                 .font(.title2)
                 .padding(.top, 5)
-            Text(routineName)
-                .font(.body)
-                .foregroundColor(.secondary)
-            Text("Raises \nPull Ups \nRun")
+            
+            if let todaysRoutine = routineStore.getTodaysRoutine() {
+                Text(todaysRoutine.routineName.uppercased())
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(todaysRoutine.exercises) { exercise in
+                        Text(exercise.name)
+                            .font(.body)
+                            .foregroundColor(.primary)
+                    }
+                }
                 .frame(width: 300, height: 100, alignment: .leading)
+            } else {
+                Text("No workout scheduled")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                Text("")
+                    .frame(width: 300, height: 100, alignment: .leading)
+            }
         }
     }
 }
