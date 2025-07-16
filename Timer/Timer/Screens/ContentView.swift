@@ -125,13 +125,12 @@ struct ContentView: View {
 }
 
 // Top Part
-struct TodaysWorkout: View{
-    var dayOfWeek: String
-    var routineName: String
-    @ObservedObject var routineStore = RoutineStore()
+struct TodaysWorkout: View {
+    let dayOfWeek: String
+    let routineStore: RoutineStore
     
-    var body: some View{
-        VStack(alignment: .center){
+    var body: some View {
+        VStack(alignment: .center) {
             Text(dayOfWeek)
                 .font(.title2)
                 .padding(.top, 5)
@@ -141,7 +140,7 @@ struct TodaysWorkout: View{
                     .font(.body)
                     .foregroundColor(.secondary)
                 
-                VStack(alignment: .leading, spacing: 4) {
+                LazyVStack(alignment: .leading, spacing: 4) {
                     ForEach(todaysRoutine.exercises) { exercise in
                         Text(exercise.name)
                             .font(.body)
