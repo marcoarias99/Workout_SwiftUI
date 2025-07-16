@@ -160,17 +160,18 @@ struct TodaysWorkout: View {
 }
 
 //Lower Part
-struct RoutineRow: View{
-    var routineName: String
-    var body: some View{
+struct RoutineRow: View {
+    let routineName: String
+    
+    var body: some View {
         Text(routineName)
     }
 }
 
 struct ImageButton: View {
-    var buttonText: String
+    let buttonText: String
 
-    var body: some View{
+    var body: some View {
         Image(systemName: buttonText)
             .renderingMode(.template)
             .resizable()
@@ -180,10 +181,6 @@ struct ImageButton: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            ContentView()
-        }
-    }
+#Preview {
+    ContentView()
 }
