@@ -20,7 +20,7 @@ struct ContentView: View {
     }
     
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationView {
             GeometryReader { geo in
                 VStack {
                     VStack {
@@ -33,9 +33,7 @@ struct ContentView: View {
                         Spacer().frame(height: 150)
                     }
                     
-                    Button {
-                        path.append("timer")
-                    } label: {
+                    NavigationLink(destination: PlayView(routineStore: routineStore)) {
                         Text("START")
                             .font(.system(size: 32, weight: .bold))
                             .frame(width: 400, height: 80, alignment: .center)
@@ -51,18 +49,15 @@ struct ContentView: View {
                                 .frame(width: 300, height: 50, alignment: .leading)
                                 .font(.system(size: 32, weight: .bold))
                             
-                            Button {
-                                path.append("addRoutine")
-                            } label: {
+                            NavigationLink(destination: AddItemView(routineStore: routineStore)) {
                                 ImageButton(buttonText: "plus.circle.fill")
                             }
                         }
                         
-                        TextField("Enter the new routine", text: $textBox)
-                            .frame(width: 350, height: 25)
-                            .onSubmit {
-                                addNewRoutine()
-                            }
+                        TextField("Enter the new routine", text: $textBox, onCommit: {
+                            addNewRoutine()
+                        })
+                        .frame(width: 350, height: 25)
                         
                         List {
                             ForEach(routineStore.routines) { routine in
@@ -75,17 +70,8 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationDestination(for: String.self) { destination in
-                switch destination {
-                case "timer":
-                    PlayView(routineStore: routineStore)
-                case "addRoutine":
-                    AddItemView(routineStore: routineStore)
-                default:
-                    EmptyView()
-                }
-            }
         }
+        .navigationBarHidden(true)
     }
     
     func move(from source: IndexSet, to destination: Int) {
