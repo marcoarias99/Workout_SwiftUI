@@ -175,15 +175,10 @@ struct PlayView: View {
 }
 }
 
-struct PlayView_Previews: PreviewProvider {
-    static var previews: some View {
-        PlayView()
-    }
-}
-
 struct BasicButton: View {
-    var buttonText: String
-    var body: some View{
+    let buttonText: String
+    
+    var body: some View {
         Image(systemName: buttonText)
             .renderingMode(.template)
             .resizable()
@@ -191,4 +186,8 @@ struct BasicButton: View {
             .foregroundColor(.white)
             .frame(width: 60, height: 60)
     }
+}
+
+#Preview {
+    PlayView(routineStore: RoutineStore())
 }
