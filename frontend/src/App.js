@@ -46,14 +46,14 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+      <div className="loading-screen">
+        <div className="loading-text">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="app">
       {currentView === 'calendar' ? (
         <CalendarView
           todayData={todayData}
@@ -72,29 +72,29 @@ function App() {
 
 function CalendarView({ todayData, routines, onStartWorkout }) {
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen">
+    <div className="calendar-view">
       {/* Header */}
-      <div className="p-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Calendar</h1>
+      <div className="header">
+        <h1 className="header-title">Calendar</h1>
         
         {/* Today's Workout */}
-        <div className="text-center mb-8">
-          <div className="text-lg font-medium text-gray-900 mb-2">
+        <div className="today-workout">
+          <div className="day-name">
             {todayData?.day}
           </div>
           {todayData?.has_workout ? (
             <div>
-              <div className="text-gray-600 text-sm mb-4">
+              <div className="routine-name">
                 {todayData.routine.name}
               </div>
-              <div className="text-left text-sm text-gray-700 space-y-1">
+              <div className="exercise-list">
                 {todayData.routine.exercises.map((exercise, index) => (
-                  <div key={index}>{exercise.name}</div>
+                  <div key={index} className="exercise-item">{exercise.name}</div>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="text-gray-600 text-sm">
+            <div className="no-workout">
               No workout scheduled
             </div>
           )}
@@ -102,40 +102,33 @@ function CalendarView({ todayData, routines, onStartWorkout }) {
       </div>
 
       {/* Start Button */}
-      <div className="px-6 mb-8">
+      <div className="start-button-container">
         <button
           onClick={onStartWorkout}
           disabled={!todayData?.has_workout}
-          className={`w-full py-4 rounded-2xl text-white text-xl font-bold ${
-            todayData?.has_workout
-              ? 'bg-red-500 hover:bg-red-600'
-              : 'bg-gray-300 cursor-not-allowed'
-          }`}
+          className={`start-button ${todayData?.has_workout ? 'enabled' : 'disabled'}`}
         >
           START
         </button>
       </div>
 
       {/* Routines Section */}
-      <div className="px-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900">Routines</h2>
-          <button className="text-green-500">
+      <div className="routines-section">
+        <div className="routines-header">
+          <h2 className="routines-title">Routines</h2>
+          <button className="add-routine-btn">
             <Plus size={32} />
           </button>
         </div>
         
-        <div className="text-gray-400 text-sm mb-4">
+        <div className="routine-input-label">
           Enter the new routine
         </div>
 
-        <div className="space-y-2">
+        <div className="routines-list">
           {routines.map((routine) => (
-            <div
-              key={routine.id}
-              className="p-4 bg-gray-50 rounded-lg border"
-            >
-              <div className="font-medium text-gray-900">
+            <div key={routine.id} className="routine-item">
+              <div className="routine-name">
                 {routine.name}
               </div>
             </div>
@@ -204,68 +197,60 @@ function TimerView({ todayData, onBack }) {
 
   if (!currentExercise) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-400 to-black flex items-center justify-center">
-        <div className="text-white text-xl">No exercises available</div>
+      <div className="timer-view">
+        <div className="timer-error">No exercises available</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-400 to-black flex flex-col items-center justify-center text-white">
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 text-white text-lg"
-      >
+    <div className="timer-view">
+      <button onClick={onBack} className="back-button">
         ← Back
       </button>
 
-      <div className="text-center mb-16">
-        <h1 className="text-2xl font-bold mb-4">
-          {currentExercise.name}
-        </h1>
-        <div className="text-sm text-gray-200">
-          Set {currentSet} of {currentExercise.sets}
+      <div className="timer-content">
+        <div className="exercise-info">
+          <h1 className="exercise-name">
+            {currentExercise.name}
+          </h1>
+          <div className="set-info">
+            Set {currentSet} of {currentExercise.sets}
+          </div>
         </div>
-      </div>
 
-      <div className="text-center mb-16">
-        <div className="text-8xl font-semibold mb-8">
-          0:{formatTime(timeLeft)}
-        </div>
-        
-        <div className="flex items-center justify-center space-x-12">
-          <button
-            onClick={previousExercise}
-            disabled={currentExerciseIndex === 0}
-            className={`p-4 ${
-              currentExerciseIndex === 0 ? 'opacity-50' : 'opacity-100'
-            }`}
-          >
-            <SkipBack size={40} />
-          </button>
+        <div className="timer-display">
+          <div className="timer-digits">
+            0:{formatTime(timeLeft)}
+          </div>
           
-          <button
-            onClick={toggleTimer}
-            className="p-4"
-          >
-            <Play size={50} />
-          </button>
-          
-          <button
-            onClick={nextExercise}
-            disabled={currentExerciseIndex === todayData.routine.exercises.length - 1}
-            className={`p-4 ${
-              currentExerciseIndex === todayData.routine.exercises.length - 1 ? 'opacity-50' : 'opacity-100'
-            }`}
-          >
-            <SkipForward size={40} />
-          </button>
+          <div className="timer-controls">
+            <button
+              onClick={previousExercise}
+              disabled={currentExerciseIndex === 0}
+              className={`control-button ${currentExerciseIndex === 0 ? 'disabled' : ''}`}
+            >
+              <SkipBack size={40} />
+            </button>
+            
+            <button onClick={toggleTimer} className="play-button">
+              <Play size={50} />
+            </button>
+            
+            <button
+              onClick={nextExercise}
+              disabled={currentExerciseIndex === todayData.routine.exercises.length - 1}
+              className={`control-button ${currentExerciseIndex === todayData.routine.exercises.length - 1 ? 'disabled' : ''}`}
+            >
+              <SkipForward size={40} />
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="text-center">
-        <div className="text-sm text-gray-200">
-          Exercise {currentExerciseIndex + 1} of {todayData.routine.exercises.length}
+        <div className="exercise-progress">
+          <div className="progress-text">
+            Exercise {currentExerciseIndex + 1} of {todayData.routine.exercises.length}
+          </div>
         </div>
       </div>
     </div>
