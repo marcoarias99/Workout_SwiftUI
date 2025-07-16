@@ -33,9 +33,11 @@ struct ContentView: View {
                     Text("START")
                         .font(.system(size: 32, weight: .bold))
                         .frame(width:400, height: 80, alignment: .center)
-                        .background(Color.red)
-                        .foregroundColor(.black)
-                        .cornerRadius(20)})
+                        .background(routineStore.getTodaysRoutine() != nil ? Color.red : Color.gray)
+                        .foregroundColor(.white)
+                        .cornerRadius(20)
+                })
+                .disabled(routineStore.getTodaysRoutine() == nil)
                 
                 VStack{
                     HStack{
