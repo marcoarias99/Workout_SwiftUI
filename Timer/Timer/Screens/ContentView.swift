@@ -14,6 +14,11 @@ struct ContentView: View {
     
     var dayarr = ["","Sunday", "Monday", "Tuesday","Wednesday","Thursday","Friday","Saturday"]
     
+    // Get current day of week
+    private var weekday: Int {
+        Calendar.current.component(.weekday, from: Date())
+    }
+    
     var body: some View {
         NavigationView{ GeometryReader{ geo in
             VStack{
@@ -27,7 +32,7 @@ struct ContentView: View {
                 NavigationLink(destination: PlayView(), label: {
                     Text("START")
                         .font(.system(size: 32, weight: .bold))
-                        .frame(width:400, height: 80, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+                        .frame(width:400, height: 80, alignment: .center)
                         .background(Color.red)
                         .foregroundColor(.black)
                         .cornerRadius(20)})
@@ -37,8 +42,6 @@ struct ContentView: View {
                         Text("Routines")
                             .frame(width: 300, height: 50, alignment: .leading)
                             .font(.system(size: 32, weight: .bold))
-//                        NavigationLink(destination: AddItemView()){
-//                            ImageButton(buttonText: "plus.circle.fill")}
                         Button(action: self.addNewRoutine, label: {
                             ImageButton(buttonText: "plus.circle.fill")
                         })
