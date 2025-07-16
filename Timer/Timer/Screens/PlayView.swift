@@ -14,7 +14,7 @@ struct PlayView: View {
     @State private var timeLeft: Int = 0
     @State private var isRunning: Bool = false
     @State private var timer: Timer?
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.presentationMode) var presentationMode
     
     var currentRoutine: Routine? {
         routineStore.getTodaysRoutine()
