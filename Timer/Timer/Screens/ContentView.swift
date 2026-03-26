@@ -6,19 +6,17 @@
 //
 
 import SwiftUI
-import Combine
 
 struct ContentView: View {
     @StateObject private var routineStore = RoutineStore()
-    @State private var textBox: String = ""
-    
+
     var dayarr = ["","Sunday", "Monday", "Tuesday","Wednesday","Thursday","Friday","Saturday"]
-    
+
     // Get current day of week
     private var weekday: Int {
         Calendar.current.component(.weekday, from: Date())
     }
-    
+
     var body: some View {
         NavigationView {
             GeometryReader { geo in
@@ -27,12 +25,12 @@ struct ContentView: View {
                         Text("Calendar")
                             .frame(width: 350, height: 50, alignment: .leading)
                             .font(.system(size: 32, weight: .bold))
-                        
+
                         TodaysWorkout(dayOfWeek: "\(dayarr[weekday])", routineStore: routineStore)
-                        
-                        Spacer().frame(height: 150)
+
+                        Spacer().frame(height: 20)
                     }
-                    
+
                     NavigationLink(destination: PlayView(routineStore: routineStore)) {
                         Text("START")
                             .font(.system(size: 32, weight: .bold))
@@ -42,26 +40,21 @@ struct ContentView: View {
                             .cornerRadius(20)
                     }
                     .disabled(routineStore.getTodaysRoutine() == nil)
-                    
+
                     VStack {
                         HStack {
                             Text("Routines")
                                 .frame(width: 300, height: 50, alignment: .leading)
                                 .font(.system(size: 32, weight: .bold))
-                            
+
                             NavigationLink(destination: AddItemView(routineStore: routineStore)) {
                                 ImageButton(buttonText: "plus.circle.fill")
                             }
                         }
-                        
-                        TextField("Enter the new routine", text: $textBox, onCommit: {
-                            addNewRoutine()
-                        })
-                        .frame(width: 350, height: 25)
-                        
+
                         List {
                             ForEach(routineStore.routines) { routine in
-                                RoutineRow(routineName: routine.routineName)
+                                RoutineRow(routineName: routine.routineName, dayOfWeek: routine.dayOfWeek)
                             }
                             .onMove(perform: move)
                             .onDelete(perform: delete)
@@ -73,40 +66,13 @@ struct ContentView: View {
         }
         .navigationBarHidden(true)
     }
-    
+
     func move(from source: IndexSet, to destination: Int) {
         routineStore.moveRoutines(from: source, to: destination)
     }
-    
+
     func delete(at offsets: IndexSet) {
         routineStore.deleteRoutines(at: offsets)
-    }
-    
-    func addNewRoutine() {
-        guard !textBox.trimmingCharacters(in: .whitespaces).isEmpty else {
-            textBox = ""
-            return
-        }
-        let newRoutine = Routine(routineName: textBox)
-        routineStore.addRoutine(newRoutine)
-        textBox = ""
-    }
-}
-    
-    func move(from source: IndexSet, to destination: Int) {
-        routineStore.routines.move(fromOffsets: source, toOffset: destination)
-    }
-    func delete(at offsets: IndexSet) {
-        routineStore.routines.remove(atOffsets: offsets)
-    }
-    
-    func addNewRoutine(){
-        guard !textBox.trimmingCharacters(in: .whitespaces).isEmpty else {
-            return textBox = ""
-        }
-        let newRoutine = Routine(routineName: textBox)
-        routineStore.routines.append(newRoutine)
-        textBox = ""
     }
 }
 
@@ -114,43 +80,100 @@ struct ContentView: View {
 struct TodaysWorkout: View {
     let dayOfWeek: String
     @ObservedObject var routineStore: RoutineStore
-    
+
     var body: some View {
-        VStack(alignment: .center) {
-            Text(dayOfWeek)
-                .font(.title2)
-                .padding(.top, 5)
-            
+        VStack(alignment: .leading, spacing: 0) {
             if let todaysRoutine = routineStore.getTodaysRoutine() {
-                Text(todaysRoutine.routineName.uppercased())
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    ForEach(todaysRoutine.exercises) { exercise in
-                        Text(exercise.name)
-                            .font(.body)
-                            .foregroundColor(.primary)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(dayOfWeek)
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.primary)
+
+                    Text(todaysRoutine.routineName.uppercased())
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.orange)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color.orange.opacity(0.12))
+                        .cornerRadius(6)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(Array(todaysRoutine.exercises.enumerated()), id: \.offset) { index, exercise in
+                            HStack(spacing: 10) {
+                                Text("\(index + 1)")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 22, height: 22)
+                                    .background(Color.orange)
+                                    .clipShape(Circle())
+                                Text(exercise.name)
+                                    .font(.system(size: 15))
+                                    .foregroundColor(.primary)
+                                Spacer()
+                                Text(formatDuration(exercise.duration))
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
                     }
+                    .padding(.top, 4)
                 }
-                .frame(width: 300, height: 100, alignment: .leading)
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(.systemBackground))
+                .cornerRadius(14)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
+                .padding(.horizontal, 16)
             } else {
-                Text("No workout scheduled")
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                Text("")
-                    .frame(width: 300, height: 100, alignment: .leading)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(dayOfWeek)
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.primary)
+                    Text("No workout scheduled today")
+                        .font(.system(size: 15))
+                        .foregroundColor(.secondary)
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(.systemBackground))
+                .cornerRadius(14)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
+                .padding(.horizontal, 16)
             }
+        }
+    }
+
+    private func formatDuration(_ seconds: Int) -> String {
+        if seconds >= 3600 {
+            let h = seconds / 3600
+            let m = (seconds % 3600) / 60
+            return "\(h)h \(m)m"
+        } else if seconds >= 60 {
+            let m = seconds / 60
+            let s = seconds % 60
+            return s == 0 ? "\(m)m" : "\(m)m \(s)s"
+        } else {
+            return "\(seconds)s"
         }
     }
 }
 
-//Lower Part
+// Lower Part
 struct RoutineRow: View {
     let routineName: String
-    
+    let dayOfWeek: String
+
     var body: some View {
-        Text(routineName)
+        HStack {
+            Text(routineName)
+                .font(.system(size: 16))
+            Spacer()
+            if !dayOfWeek.isEmpty {
+                Text(dayOfWeek)
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+            }
+        }
     }
 }
 
